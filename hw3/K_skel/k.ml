@@ -298,25 +298,34 @@ struct
       (v, mem')
     | CALLV (f, exl) ->
       (
-        let (xl, ex', env') = lookup_env_proc env f
-        let l = []
+        let (xl, ex', env') = lookup_env_proc env f in
         let fx a b =
         (
+          let (p, q) = eval (snd a) env b in
+          ((fst a) @ p::[], q)
+        ) in
+        (* let fx a b =
+        (
           let (p, q) = eval a env b in
-          l::p::[] in
+          (* (vl := (!vl)::p::[]) in *)
           (snd (eval a env b))
-        )
-        let (_, memn) = List.fold_left fx mem exl
-
-        let memn =
-        let (l, memn') = Mem.alloc memn in
-        eval (Mem.store mem'' l v) (Env.bind env x (Addr l)) e2
+        ) in *)
+        let (vl, memn) = List.fold_left fx ([], mem) exl in
+        let fy c' a' b' =
+        (
+          let (loc, memn') = Mem.alloc (fst c') in
+           ((Mem.store memn' loc b'), (Env.bind (snd c') a' (Addr loc)))
+        ) in
+        let (mem', env'') = List.fold_left2 fy (memn, env') xl vl in
+        let env''' = Env.bind env'' f (Proc (xl, ex', env')) in
+        let (v', mem') = eval mem' env''' ex' in
+        (v', mem')
       )
-    | CALLR of id * id list       (* call by referenece *)
+    (* | CALLR of id * id list       (* call by referenece *)
     | RECORD of (id * exp) list   (* record construction *)
     | FIELD of exp * id           (* access record field *)
     | ASSIGNF of exp * id * exp   (* assign to record field *)
-    | _ -> failwith "Unimplemented" (* TODO : Implement rest of the cases *)
+    | _ -> failwith "Unimplemented" (* TODO : Implement rest of the cases *) *)
 
   let run (mem, env, pgm) =
     let (v, _ ) = eval mem env pgm in
