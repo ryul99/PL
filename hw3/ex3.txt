@@ -1,0 +1,26 @@
+let head := {next := unit} in
+let proc leaf(n) = {v := n, left := unit, right := unit} in
+let proc makeTree(n, l, r) = {v := n, left := l, right := r} in
+let proc makeLtree(n, l) = {v := n, left := l, right := unit} in
+let proc makeRtree(n, r) = {v := n, left := unit, right := r} in
+let proc isEmpty(t) = if (t = unit) then (true) else (false) in
+let proc rTree(t) = t.right in
+let proc lTree(t) = t.left in
+let proc nodeVal(t) = t.v in
+let proc dft(t) = (if (not (t = unit)) then ((write (t.v)); dft (t.left); dft (t.right)) else unit) in
+let proc bft(t) = (
+                    if (not (isEmpty(t))) then (head.next := {tree := t, next := unit}) else unit;
+                    while (not (head.next = unit)) do
+                    (
+                      write (((head.next).tree).v);
+                      let a := head in
+                      (
+                        while (not (a.next = unit)) do (a := a.next);
+                        if (not ((((head.next).tree).left) = unit)) then (a.next := {tree := (((head.next).tree).left), next := unit}) else unit;
+                        while (not (a.next = unit)) do (a := a.next);
+                        if (not ((((head.next).tree).right) = unit)) then (a.next := {tree := (((head.next).tree).right), next := unit}) else unit
+                      );
+                      head.next := head.next.next
+                    )
+                  ) in
+2018
