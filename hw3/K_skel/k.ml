@@ -262,6 +262,7 @@ struct
           | Bool _ -> (Bool (value_bool n1 = value_bool n2), mem'')
           | _ -> (Bool false, mem'')
           )
+        | _ -> (Bool false, mem'')
       )
     | LESS (e1, e2) ->
       let (n1, mem') = eval mem env e1 in
@@ -304,28 +305,67 @@ struct
           let (p, q) = eval (snd a) env b in
           ((fst a) @ p::[], q)
         ) in
-        (* let fx a b =
-        (
-          let (p, q) = eval a env b in
-          (* (vl := (!vl)::p::[]) in *)
-          (snd (eval a env b))
-        ) in *)
         let (vl, memn) = List.fold_left fx ([], mem) exl in
         let fy c' a' b' =
         (
           let (loc, memn') = Mem.alloc (fst c') in
            ((Mem.store memn' loc b'), (Env.bind (snd c') a' (Addr loc)))
         ) in
-        let (mem', env'') = List.fold_left2 fy (memn, env') xl vl in
+        if (List.length xl != List.length vl) then (raise (Error "InvalidArg")) else
+        (let (mem', env'') = List.fold_left2 fy (memn, env') xl vl in
         let env''' = Env.bind env'' f (Proc (xl, ex', env')) in
         let (v', mem') = eval mem' env''' ex' in
-        (v', mem')
+        (v', mem'))
       )
-    (* | CALLR of id * id list       (* call by referenece *)
-    | RECORD of (id * exp) list   (* record construction *)
-    | FIELD of exp * id           (* access record field *)
-    | ASSIGNF of exp * id * exp   (* assign to record field *)
-    | _ -> failwith "Unimplemented" (* TODO : Implement rest of the cases *) *)
+    | CALLR (f, yl) ->
+      (
+        let (xl, ex, env') = lookup_env_proc env f in
+        let fx a xb yc = (Env.bind a xb (Addr (lookup_env_loc env yc))) in
+        if (List.length xl != List.length yl) then (raise (Error "InvalidArg")) else
+        (let env'' = List.fold_left2 fx env' xl yl in
+        let env''' = Env.bind env'' f (Proc (xl, ex, env')) in
+        let (v, mem') = eval mem env''' ex in
+        (v, mem'))
+      )
+    | RECORD l ->
+      (
+        match List.length l with
+        | 0 -> (Unit, mem)
+        | _ ->
+        (
+          let fx a b =
+          (
+            let (p, q) = eval (snd a) env (snd b) in
+            ((fst a) @ ((fst b), p)::[], q)
+          ) in
+          let eE = fun x -> raise (Error "Unbound") in
+          let (xvl, memn) = List.fold_left fx ([], mem) l in
+          let bind ff id loc = (fun x -> if x = id then loc else ff x) in
+          let fy a b = (* (ff, mem) (x, v) *)
+          (
+            let (lc, memn') = Mem.alloc (snd a) in
+            ((bind (fst a) (fst b) lc), (Mem.store memn' lc (snd b)))
+          ) in
+          let (finalE, finalM) = List.fold_left fy (eE, memn) xvl in
+          (Record finalE, finalM)
+          (* (
+            match finalE with
+            | Env.E e -> (Record e, finalM)
+          ) *)
+        )
+      )
+    | FIELD (ex, id) ->
+    (
+      let (r, mem') = eval mem env ex in
+      ((Mem.load mem' ((value_record r) id)), mem')
+    )
+    | ASSIGNF (ex1, id, ex2) ->
+    (
+      let (r, mem1) = eval mem env ex1 in
+      let (v, mem2) = eval mem1 env ex2 in
+      (v, (Mem.store mem2 ((value_record r) id) v))
+    )
+    | _ -> failwith "Unimplemented" (* TODO : Implement rest of the cases *)
 
   let run (mem, env, pgm) =
     let (v, _ ) = eval mem env pgm in
