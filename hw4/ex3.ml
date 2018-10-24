@@ -45,8 +45,8 @@ let shoppingList: require list -> (id * gift list) list = fun req -> (
     | Items gl -> gl
     | Same i -> Hashtbl.find allL i
     | Common (a, b) -> (
-      let al: gift list = List.sort compare (eval a) in
-      let bl: gift list = List.sort compare (eval b) in
+      let al: gift list = List.sort_uniq compare (eval a) in
+      let bl: gift list = List.sort_uniq compare (eval b) in
       com [] al bl
     )
     | Except (a, b) -> (
@@ -54,7 +54,7 @@ let shoppingList: require list -> (id * gift list) list = fun req -> (
       let re: gift list = [] in
       let fx: gift list -> gift -> gift list = fun ret aa -> if(not (List.mem aa b)) then (List.sort_uniq compare (aa::ret)) else (ret) in
       let rrr = List.fold_left fx re al in
-      (List.sort compare rrr)
+      (List.sort_uniq compare rrr)
     )
   ) in
 
@@ -64,7 +64,7 @@ let shoppingList: require list -> (id * gift list) list = fun req -> (
     )
   ) in
 
-  let rec shopL: require list -> unit = fun req -> (
+  let rec shopL: require list -> unit = fun rq -> (
     let reD = ref 0 in
 
     let shp: require -> unit = fun reqqq -> (
@@ -74,8 +74,8 @@ let shoppingList: require list -> (id * gift list) list = fun req -> (
       ()
     ) in
 
-    let _ = List.iter shp req in
-    let r = if(!reD = 0) then () else (shopL req) in
+    let _ = List.iter shp rq in
+    let r = if(!reD = 0) then () else (shopL rq) in
     r
   ) in
 
