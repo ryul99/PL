@@ -21,10 +21,10 @@ let shoppingList: require list -> (id * gift list) list = fun req -> (
   let _ = Hashtbl.add cAll D 0 in
   let _ = Hashtbl.add cAll E 0 in
 
-  let conc: gift list -> gift list -> gift list = fun a b -> (
+  (* let conc: gift list -> gift list -> gift list = fun a b -> (
     let fx: gift list -> gift -> gift list = fun l x -> (if (List.mem x l) then (l) else (l @ x::[])) in
     List.sort compare (List.fold_left fx a b)
-  ) in
+  ) in *)
 
   let rec com: gift list -> gift list -> gift list -> gift list = fun re a b -> (
     match a with
@@ -33,7 +33,7 @@ let shoppingList: require list -> (id * gift list) list = fun req -> (
       match b with
       | [] -> re
       | _ -> (
-        if (List.hd a = List.hd b) then (com (conc re ((List.hd a)::[])) (List.tl a) (List.tl b)) else (
+        if (List.hd a = List.hd b) then (com (List.sort_uniq compare ((List.hd a)::re)) (List.tl a) (List.tl b)) else (
           if (List.hd a > List.hd b) then (com re a (List.tl b)) else (com re (List.tl a) b)
         )
       )
@@ -52,7 +52,7 @@ let shoppingList: require list -> (id * gift list) list = fun req -> (
     | Except (a, b) -> (
       let al: gift list = eval a in
       let re: gift list = [] in
-      let fx: gift list -> gift -> gift list = fun ret aa -> if(not (List.mem aa b)) then (conc ret (aa::[])) else (ret) in
+      let fx: gift list -> gift -> gift list = fun ret aa -> if(not (List.mem aa b)) then (List.sort_uniq compare (aa::ret)) else (ret) in
       let rrr = List.fold_left fx re al in
       (List.sort compare rrr)
     )
@@ -60,7 +60,7 @@ let shoppingList: require list -> (id * gift list) list = fun req -> (
 
   let rec evalR: cond list -> gift list -> gift list = fun conL re -> (
     if(List.length conL = 0) then (re) else (
-      evalR (List.tl conL) (conc re (eval (List.hd conL)))
+      evalR (List.tl conL) (List.sort_uniq compare (re @ (eval (List.hd conL))))
     )
   ) in
 
