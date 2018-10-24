@@ -7,25 +7,25 @@ and cond
 and gift = int (* 선물 번호 *)
 and id = A | B | C | D | E (* 조카 이름 *)
 
-let allL = Hashtbl.create 10
-let cAll = Hashtbl.create 10
-let _ = Hashtbl.add allL A []
-let _ = Hashtbl.add allL B []
-let _ = Hashtbl.add allL C []
-let _ = Hashtbl.add allL D []
-let _ = Hashtbl.add allL E []
-let _ = Hashtbl.add cAll A 0
-let _ = Hashtbl.add cAll B 0
-let _ = Hashtbl.add cAll C 0
-let _ = Hashtbl.add cAll D 0
-let _ = Hashtbl.add cAll E 0
+let allL = Hashtbl.create 10 in
+let cAll = Hashtbl.create 10 in
+let _ = Hashtbl.add allL A [] in
+let _ = Hashtbl.add allL B [] in
+let _ = Hashtbl.add allL C [] in
+let _ = Hashtbl.add allL D [] in
+let _ = Hashtbl.add allL E [] in
+let _ = Hashtbl.add cAll A 0 in
+let _ = Hashtbl.add cAll B 0 in
+let _ = Hashtbl.add cAll C 0 in
+let _ = Hashtbl.add cAll D 0 in
+let _ = Hashtbl.add cAll E 0 in
 
 (* let allL: (id * (ref gift list)) list = ((A,[]), (B,[]), (C,[]), (D,[]), (E,[])) *)
 
 let conc: gift list -> gift list -> gift list = fun a b -> (
   let fx: gift list -> gift -> gift list = fun l x -> (if (List.mem x l) then (l) else (l @ x::[])) in
   List.sort compare (List.fold_left fx a b)
-)
+) in
 
 let rec com: gift list -> gift list -> gift list -> gift list = fun re a b -> (
   match a with
@@ -39,7 +39,7 @@ let rec com: gift list -> gift list -> gift list -> gift list = fun re a b -> (
       )
     )
   )
-)
+) in
 
 let rec eval: cond -> gift list = fun c -> (
   match c with
@@ -57,13 +57,13 @@ let rec eval: cond -> gift list = fun c -> (
     let rrr = List.fold_left fx re al in
     (List.sort compare rrr)
   )
-)
+) in
 
 let rec evalR: cond list -> gift list -> gift list = fun conL re -> (
   if(List.length conL = 0) then (re) else (
     evalR (List.tl conL) (conc re (eval (List.hd conL)))
   )
-)
+) in
 
 let rec shopL: require list -> unit = fun req -> (
   let reD = ref 0 in
@@ -78,20 +78,9 @@ let rec shopL: require list -> unit = fun req -> (
   let _ = List.iter shp req in
   let r = if(!reD = 0) then () else (shopL req) in
   r
-)
+) in
 
 let shoppingList: require list -> (id * gift list) list = fun req -> (
   let _ = shopL req in
-  let ret = (A, Hashtbl.find allL A)::(B, Hashtbl.find allL B)::(C, Hashtbl.find allL C)::(D, Hashtbl.find allL D)::(E, Hashtbl.find allL E)::[] in
-  let _ = Hashtbl.replace allL A [] in
-  let _ = Hashtbl.replace allL B [] in
-  let _ = Hashtbl.replace allL C [] in
-  let _ = Hashtbl.replace allL D [] in
-  let _ = Hashtbl.replace allL E [] in
-  let _ = Hashtbl.replace cAll A 0 in
-  let _ = Hashtbl.replace cAll B 0 in
-  let _ = Hashtbl.replace cAll C 0 in
-  let _ = Hashtbl.replace cAll D 0 in
-  let _ = Hashtbl.replace cAll E 0 in
-  ret
+  (A, Hashtbl.find allL A)::(B, Hashtbl.find allL B)::(C, Hashtbl.find allL C)::(D, Hashtbl.find allL D)::(E, Hashtbl.find allL E)::[]
 )
