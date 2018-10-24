@@ -22,6 +22,11 @@ let _ = Hashtbl.add cAll E 0
 
 (* let allL: (id * (ref gift list)) list = ((A,[]), (B,[]), (C,[]), (D,[]), (E,[])) *)
 
+let conc: gift list -> gift list -> gift list = fun a b -> (
+  let fx: gift list -> gift -> gift list = fun l x -> (if (List.mem x l) then (l) else (l @ x::[])) in
+  List.sort compare (List.fold_left fx a b)
+)
+
 let rec com: gift list -> gift list -> gift list -> gift list = fun re a b -> (
   match a with
   | [] -> re
@@ -29,16 +34,11 @@ let rec com: gift list -> gift list -> gift list -> gift list = fun re a b -> (
     match b with
     | [] -> re
     | _ -> (
-      if (List.hd a = List.hd b) then (com (re @ (List.hd a)::[]) (List.tl a) (List.tl b)) else (
+      if (List.hd a = List.hd b) then (com (conc re ((List.hd a)::[])) (List.tl a) (List.tl b)) else (
         if (List.hd a > List.hd b) then (com re a (List.tl b)) else (com re (List.tl a) b)
       )
     )
   )
-)
-
-let conc: gift list -> gift list -> gift list = fun a b -> (
-  let fx: gift list -> gift -> gift list = fun l x -> (if (List.mem x l) then (l) else (l @ x::[])) in
-  List.fold_left fx a b
 )
 
 let rec eval: cond -> gift list = fun c -> (
@@ -53,9 +53,9 @@ let rec eval: cond -> gift list = fun c -> (
   | Except (a, b) -> (
     let al: gift list = eval a in
     let re: gift list = [] in
-    let fx: gift list -> gift -> gift list = fun ret aa -> if(not (List.mem aa b)) then (ret @ aa::[]) else (ret) in
+    let fx: gift list -> gift -> gift list = fun ret aa -> if(not (List.mem aa b)) then (conc ret (aa::[])) else (ret) in
     let rrr = List.fold_left fx re al in
-    rrr
+    (List.sort compare rrr)
   )
 )
 
@@ -82,5 +82,16 @@ let rec shopL: require list -> unit = fun req -> (
 
 let shoppingList: require list -> (id * gift list) list = fun req -> (
   let _ = shopL req in
-  Hashtbl.fold (fun k v l -> (k, v)::l) allL []
+  let ret = (A, Hashtbl.find allL A)::(B, Hashtbl.find allL B)::(C, Hashtbl.find allL C)::(D, Hashtbl.find allL D)::(E, Hashtbl.find allL E)::[] in
+  let _ = Hashtbl.replace allL A [] in
+  let _ = Hashtbl.replace allL B [] in
+  let _ = Hashtbl.replace allL C [] in
+  let _ = Hashtbl.replace allL D [] in
+  let _ = Hashtbl.replace allL E [] in
+  let _ = Hashtbl.replace cAll A 0 in
+  let _ = Hashtbl.replace cAll B 0 in
+  let _ = Hashtbl.replace cAll C 0 in
+  let _ = Hashtbl.replace cAll D 0 in
+  let _ = Hashtbl.replace cAll E 0 in
+  ret
 )
