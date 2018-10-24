@@ -7,13 +7,20 @@ and cond
 and gift = int (* 선물 번호 *)
 and id = A | B | C | D | E (* 조카 이름 *)
 
-let AL: gift list = []
-let BL: gift list = []
-let CL: gift list = []
-let DL: gift list = []
-let EL: gift list = []
+let allL = Hashtbl.create 10
+let cAll = Hashtbl.create 10
+let _ = Hashtbl.add allL A []
+let _ = Hashtbl.add allL B []
+let _ = Hashtbl.add allL C []
+let _ = Hashtbl.add allL D []
+let _ = Hashtbl.add allL E []
+let _ = Hashtbl.add cAll A 0
+let _ = Hashtbl.add cAll B 0
+let _ = Hashtbl.add cAll C 0
+let _ = Hashtbl.add cAll D 0
+let _ = Hashtbl.add cAll E 0
 
-let allL: (id * (gift list)) list = ((A,[]), (B,[]), (C,[]), (D,[]), (E,[]))
+(* let allL: (id * (ref gift list)) list = ((A,[]), (B,[]), (C,[]), (D,[]), (E,[])) *)
 
 let rec com: gift list -> gift list -> gift list -> gift list = fun re a b -> (
   match a with
@@ -27,13 +34,17 @@ let rec com: gift list -> gift list -> gift list -> gift list = fun re a b -> (
       )
     )
   )
+)
 
+let conc: gift list -> gift list -> gift list = fun a b -> (
+  let fx l x = if (List.mem l x) then (l) else (l::x::[]) in
+  List.fold_left fx a b
 )
 
 let rec eval: cond -> gift list = fun c -> (
   match cond with
   | Items gl -> gl
-  | Same i -> List.assoc i
+  | Same i -> Hashtbl.find allL i
   | Common (a, b) -> (
     let al: gift list = List.sort List.compare (eval a) in
     let bl: gift list = List.sort List.compare (eval b) in
@@ -48,7 +59,17 @@ let rec eval: cond -> gift list = fun c -> (
   )
 )
 
+let rec evalR: cond list -> gift list -> gift list = fun conL re -> (
+  if(List.length conL = 0) then (re) else (
+    evalR (List.tl conL) (conc re (eval (List.hd conL)))
+  )
+)
+
+let rec shop: require list -> (id, int) Hashtbl.t = fun req -> (
+  let reD = ref 0 in
+  let _ = Hashtbl.replace allL (fst (List.nth req 1)) (evalR (snd (List.nth req 1))) in
+)
 
 let shoppingList: require list -> (id * gift list) list = fun req -> (
-  let 
+
 )
