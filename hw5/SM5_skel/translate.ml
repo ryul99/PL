@@ -1,5 +1,5 @@
 (*
- * SNU 4190.310 Programming Languages 
+ * SNU 4190.310 Programming Languages
  * K-- to SM5 translator skeleton code
  *)
 
@@ -15,6 +15,29 @@ module Translator = struct
       trans e1 @ [Sm5.MALLOC; Sm5.BIND x; Sm5.PUSH (Sm5.Id x); Sm5.STORE] @
       trans e2 @ [Sm5.UNBIND; Sm5.POP]
     | K.READ x -> [Sm5.GET; Sm5.PUSH (Sm5.Id x); Sm5.STORE; Sm5.PUSH (Sm5.Id x); Sm5.LOAD]
+    | K.TRUE -> [Sm5.PUSH (Sm5.Val (Sm5.B true))]
+    | K.FALSE -> [Sm5.PUSH (Sm5.Val (Sm5.B false))]
+    | K.UNIT -> [Sm5.PUSH (Sm5.Val (Sm5.Unit))]]
+    | K.VAR id -> [Sm5.PUSH (Sm5.Val (Sm5.Id id))]
+    | K.SUB (ex1, ex2) -> trans ex1 @ trans ex2 @ [Sm5.SUB]
+    | K.MUL (ex1, ex2) -> trans ex1 @ trans ex2 @ [Sm5.MUL]
+    | K.DIV (ex1, ex2) -> trans ex1 @ trans ex2 @ [Sm5.DIV]
+    | K.EQUAL (ex1, ex2) -> trans ex1 @ trans ex2 @ [Sm5.EQ]
+    | K.LESS (ex1, ex2) -> trans ex1 @ trans ex2 @ [Sm5.LESS]
+    | K.NOT ex -> trans ex @ [Sm5.NOT]
+    | K.ASSIGN (id, ex) -> trans ex @ [Sm5.PUSH (Sm5.Id x); Sm5.STORE]
+    | K.SEQ (ex1, ex2) -> trans ex1 @ [Sm5.POP] @ trans ex2 (*SEQ doesnt change env?*)
+    | K.IF (ex, ex1, ex2) -> trans ex @ [Sm5.JTR (trans ex1, trans ex2)]
+    | K.WHILE (ex1, ex2) -> (
+      (* let ff : Sm5.command = if (trans ex1 = Sm5.) *)
+      (* trans ex1 @ [Sm5.JTR (trans ex2 @ [], Sm5.PUSH (Sm5.Val (Sm5.Unit)))] *)
+      trans ex1 @ [Sm5.JTR ((trans ex2 @ [Sm5.POP] @ (trans (WHILE (ex1, ex2)))),Sm5.PUSH (Sm5.Val (Sm5.Unit)))]
+    )
+    | K.FOR (id, ex1, ex2, ex3) -> trans ex1 @ trans ex2 @
+    | K.LETF of id * id * exp * exp (* procedure binding *)
+    | K.CALLV of id * exp           (* call by value *)
+    | K.CALLR of id * id            (* call by referenece *)
+    | K.WRITE of exp
     | _ -> failwith "Unimplemented"
 
 end
