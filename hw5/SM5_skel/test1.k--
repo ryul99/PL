@@ -1,9 +1,0 @@
-(* test case 23 : K.CALLR *)
-
-let proc mul2 (x) =
-    x := x + x
-in
-let x := 3 in                                                               
-write( mul2(mul2<x>) );
-write(x)
-
