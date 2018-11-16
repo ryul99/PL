@@ -28,12 +28,14 @@ module Translator = struct
     | K.ASSIGN (id, ex) -> trans ex @ [Sm5.PUSH (Sm5.Id id); Sm5.STORE; Sm5.PUSH (Sm5.Id id); Sm5.LOAD]
     | K.SEQ (ex1, ex2) -> trans ex1 @ [Sm5.POP] @ trans ex2 (*SEQ doesnt change env?*)
     | K.IF (ex, ex1, ex2) -> trans ex @ [Sm5.JTR (trans ex1, trans ex2)]
-    (* | K.WHILE (ex1, ex2) -> (
-      (* let ff : Sm5.command = if (trans ex1 = Sm5.) *)
-      (* trans ex1 @ [Sm5.JTR (trans ex2 @ [], Sm5.PUSH (Sm5.Val (Sm5.Unit)))] *)
-      (* trans ex1 @ [Sm5.JTR ((trans ex2 @ [Sm5.POP] @ (trans (WHILE (ex1, ex2)))),Sm5.PUSH (Sm5.Val (Sm5.Unit)))] *)
+    | K.WHILE (e1, e2) -> (
+      [Sm5.PUSH (Sm5.Fn("$", [Sm5.BIND "@"] @ trans e1 @ [Sm5.JTR(trans e2 @ [Sm5.PUSH (Sm5.Id "@");Sm5.PUSH (Sm5.Id "@");
+      Sm5.PUSH (Sm5.Val (Sm5.B true)); Sm5.PUSH (Sm5.Id "$"); Sm5.CALL; Sm5.POP], [Sm5.PUSH (Sm5.Val (Sm5.Unit))]); Sm5.UNBIND])); Sm5.BIND "@"] @ [Sm5.PUSH (Sm5.Id "@"); Sm5.PUSH (Sm5.Id "@");
+      Sm5.PUSH (Sm5.Val (Sm5.B true)); Sm5.MALLOC; Sm5.CALL] @ [Sm5.POP]
+      (* trans e1 @ [Sm5.JTR(trans e2 @ [Sm5.POP] @ , Sm5.PUSH (Sm5.Val (Sm5.Unit)))] *)
+      (* Sm5.MALLOC; Sm5.BIND "!"; Sm5.PUSH (Sm5.Id "!"); Sm5.STORE; Sm5.PUSH (Sm5.Id "!"); Sm5.LOAD;  *)
     )
-    | K.FOR (id, ex1, ex2, ex3) -> () *)
+    (* | K.FOR (id, ex1, ex2, ex3) -> () *)
     | K.LETF (f, x, e1, e2) -> (
       [Sm5.PUSH (Sm5.Fn(x, [Sm5.BIND f] @ trans e1 @ [Sm5.UNBIND])); Sm5.BIND f] @ trans e2 @ [Sm5.UNBIND; Sm5.POP]
     )
