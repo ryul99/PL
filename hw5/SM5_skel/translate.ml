@@ -25,7 +25,7 @@ module Translator = struct
     | K.EQUAL (ex1, ex2) -> trans ex1 @ trans ex2 @ [Sm5.EQ]
     | K.LESS (ex1, ex2) -> trans ex1 @ trans ex2 @ [Sm5.LESS]
     | K.NOT ex -> trans ex @ [Sm5.NOT]
-    | K.ASSIGN (id, ex) -> trans ex @ [Sm5.PUSH (Sm5.Id id); Sm5.STORE]
+    | K.ASSIGN (id, ex) -> trans ex @ [Sm5.PUSH (Sm5.Id id); Sm5.STORE; Sm5.PUSH (Sm5.Id id); Sm5.LOAD]
     | K.SEQ (ex1, ex2) -> trans ex1 @ [Sm5.POP] @ trans ex2 (*SEQ doesnt change env?*)
     | K.IF (ex, ex1, ex2) -> trans ex @ [Sm5.JTR (trans ex1, trans ex2)]
     (* | K.WHILE (ex1, ex2) -> (
@@ -33,12 +33,16 @@ module Translator = struct
       (* trans ex1 @ [Sm5.JTR (trans ex2 @ [], Sm5.PUSH (Sm5.Val (Sm5.Unit)))] *)
       (* trans ex1 @ [Sm5.JTR ((trans ex2 @ [Sm5.POP] @ (trans (WHILE (ex1, ex2)))),Sm5.PUSH (Sm5.Val (Sm5.Unit)))] *)
     )
-    | K.FOR (id, ex1, ex2, ex3) -> ()
-    | K.LETF (id1, id2, ex1, ex2) -> () *)
-    | K.CALLV (f, ex) -> (
-      [Sm5.PUSH (Sm5.Id f)] @ trans ex @ [Sm5.MALLOC; Sm5.CALL]
+    | K.FOR (id, ex1, ex2, ex3) -> () *)
+    | K.LETF (f, x, e1, e2) -> (
+      [Sm5.PUSH (Sm5.Fn(x, [Sm5.BIND f] @ trans e1 @ [Sm5.UNBIND])); Sm5.BIND f] @ trans e2 @ [Sm5.UNBIND; Sm5.POP]
     )
-    (* | K.CALLR (id1, id2) -> () *)
+    | K.CALLV (f, ex) -> (
+      [Sm5.PUSH (Sm5.Id f); Sm5.PUSH (Sm5.Id f)] @ trans ex @ [Sm5.MALLOC; Sm5.CALL; Sm5.POP]
+    )
+    | K.CALLR (f, arg) -> (
+      [Sm5.PUSH (Sm5.Id f); Sm5.PUSH (Sm5.Id f); Sm5.PUSH (Sm5.Id arg); Sm5.LOAD; Sm5.PUSH (Sm5.Id arg); Sm5.CALL; Sm5.POP]
+    )
     | K.WRITE ex -> (trans ex @ [Sm5.MALLOC; Sm5.BIND "#"; Sm5.PUSH (Sm5.Id "#"); Sm5.STORE; Sm5.PUSH (Sm5.Id "#"); Sm5.LOAD; Sm5.PUT; Sm5.PUSH (Sm5.Id "#"); Sm5.LOAD; Sm5.UNBIND; Sm5.POP])
     | _ -> failwith "Unimplemented"
 
