@@ -180,7 +180,8 @@ struct
       (match c with
       | Fun (x, e) -> eval (env' @+ (x, v2)) m'' e
       | RecFun (f, x, e) -> (
-        eval ((env' @+ (x, v2)) @+ (f, c)) m'' e
+        eval ((env' @+ (x, v2)) @+ (f, v1)) m'' e
+      )
       )
     | IF (e1, e2, e3) ->
       let (v1, m') = eval env mem e1 in
@@ -211,8 +212,7 @@ struct
       match decl with
       | REC (id1, id2, exp) -> (
         let (v1, m1) = eval env mem exp in
-        let b = RecFun (id1, id2, exp) in
-        eval (env @+ (id1, b)) m1 e
+        eval (env @+ (id1, v1)) m1 e
       )
       | VAL (id, exp) -> (
         let (v1, m1) = eval env mem exp in
@@ -222,16 +222,16 @@ struct
     | MALLOC exp -> (
       let (v1, m1) = eval env mem exp in
       let (l, m2) = malloc m1 in
-      store m2 (l, v1)
+      (Loc l, store m2 (l, v1))
     )
     | ASSIGN (e1, e2) -> (
       let (l, m1) = eval env mem e1 in
       let (v, m2) = eval env m1 e2 in
-      (v, (store m2 (l, v)))
+      (v, (store m2 (getLoc l, v)))
     )
     | BANG e -> (
       let (l, m1) = eval env mem e in
-      ((load m1 l), m1)
+      ((load m1 (getLoc l)), m1)
     )
     | SEQ (e1, e2) -> (
       let (v1, m1) = eval env mem e1 in
