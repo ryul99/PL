@@ -180,7 +180,7 @@ struct
       (match c with
       | Fun (x, e) -> eval (env' @+ (x, v2)) m'' e
       | RecFun (f, x, e) -> (
-        let (v3, m3) = eval ((env' @+ (x, v2)) @+ (f, c)) m'' e
+        eval ((env' @+ (x, v2)) @+ (f, c)) m'' e
       )
     | IF (e1, e2, e3) ->
       let (v1, m') = eval env mem e1 in
