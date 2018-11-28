@@ -135,27 +135,27 @@ struct
     | OR ->  (fun (v1,v2) -> Bool (getBool v1 || getBool v2))
     | EQ ->  (fun (v1,v2) -> Bool (
       match v1 with
-      | Pair _ -> false
-      | Closure _ -> false
+      | Pair _ -> raise (TypeError "Pair")
+      | Closure _ -> raise (TypeError "Closure")
       | Int a -> (
         match v2 with
         | Int b -> (a = b)
-        | _ -> false
+        | _ -> raise (TypeError "Different Types")
       )
       | String a -> (
         match v2 with
         | String b -> (a = b)
-        | _ -> false
+        | _ -> raise (TypeError "Different Types")
       )
       | Bool a -> (
         match v2 with
         | Bool b -> (a = b)
-        | _ -> false
+        | _ -> raise (TypeError "Different Types")
       )
       | Loc a -> (
         match v2 with
         | Loc b -> (a = b)
-        | _ -> false
+        | _ -> raise (TypeError "Different Types")
       )
     ))
 
@@ -180,7 +180,8 @@ struct
       (match c with
       | Fun (x, e) -> eval (env' @+ (x, v2)) m'' e
       | RecFun (f, x, e) -> (
-        eval ((env' @+ (x, v2)) @+ (f, v1)) m'' e
+        let env2 = env' @+ (x, v2) in
+        eval (env2 @+ (f, v1)) m'' e
       )
       )
     | IF (e1, e2, e3) ->
@@ -212,7 +213,14 @@ struct
       match decl with
       | REC (id1, id2, exp) -> (
         let (v1, m1) = eval env mem exp in
-        eval (env @+ (id1, v1)) m1 e
+        let (fex, env1) = getClosure v1 in
+        match fex with
+        | Fun (x, eee) -> (
+          let fff = RecFun (id1, x, eee) in
+          let vv = Closure (fff, env1) in
+          eval (env @+ (id1, vv)) m1 e
+        )
+        | _ -> raise (TypeError "not a function")
       )
       | VAL (id, exp) -> (
         let (v1, m1) = eval env mem exp in
