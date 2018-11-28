@@ -212,7 +212,7 @@ struct
     | LET (decl, e) -> (
       match decl with
       | REC (id1, id2, exp) -> (
-        let (v1, m1) = eval env mem exp in
+        let (v1, m1) = eval env mem (FN (id2, exp)) in
         let (fex, env1) = getClosure v1 in
         match fex with
         | Fun (x, eee) -> (
