@@ -1,0 +1,47 @@
+traveral(root){
+  lookAtNode = null
+  parentNode = null
+  tempNode = null
+  noMarkNode = null
+
+  lookAtNode = root
+  lookAtNode.mark = true
+  while(true){
+    noMarkNode = null
+    //현재 보고 있는 노드(lookAtNode)의 자식노드들 중 마크되지 않은 노드 판별
+    for i in lookAtNode.children{
+      //i가 마크 되어 있지 않으면
+      if(i.mark == false){
+        noMarkNode = i
+        break
+      }
+    }
+    //lookAtNode의 자식노드들 중 마크되지 않은 노드가 존재하면
+    if(noMarkNode != null){
+      tempNode = lookAtNode
+      lookAtNode = noMarkNode
+      tempNode.cookie = true
+      // tempNode의 자식노드로 저장되어 있는 lookAtNode의 자리에 parentNode를 저장한다
+      tempNode.children[lookAtNode] = parentNode
+      lookAtNode.mark = true
+      parentNode = tempNode
+    }
+    //lookAtNode의 자식노드들 중 마크되지 않은 노드가 존재하지 않으면
+    else{
+      if (parentNode == null){
+        return
+      }
+      for i in parentNode.children{
+        if(i == null || i.cookie == true){
+          tempNode = i
+          break
+        }
+      }
+      //parentNode의 자식노드로 저장되어 있는 과자노드의 자리에 현재 보고 있는 노드를 저장한다
+      parentNode.children[tempNode] = lookAtNode
+      parentNode.cookie = false
+      lookAtNode = parentNode
+      parentNode = tempNode
+    }
+  }
+}
